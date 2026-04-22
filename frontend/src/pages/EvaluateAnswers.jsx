@@ -28,7 +28,7 @@ export default function EvaluateAnswers() {
 
     api.get(`/questions/exam/${examId}`)
       .then((res) => {
-        setQuestions(res.data);
+        setQuestions(res.data.filter((q) => q.questionType === "DESCRIPTIVE"));
         setQuestionId("");
         setAnswers([]);
         setAnswerId("");
@@ -50,7 +50,7 @@ export default function EvaluateAnswers() {
 
     api.get(`/answers/exam/${examId}/question/${questionId}`)
       .then((res) => {
-        setAnswers(res.data);
+        setAnswers(res.data.filter((a) => a.evaluationStatus === "MANUAL_REVIEW_PENDING"));
         setAnswerId("");
       })
       .catch(() => {
@@ -122,6 +122,11 @@ export default function EvaluateAnswers() {
               </option>
             ))}
           </select>
+          {examId && questions.length === 0 ? (
+            <p className="muted" style={{ margin: "0.4rem 0 0" }}>
+              No descriptive questions found for this exam.
+            </p>
+          ) : null}
         </div>
 
         <div className="field">
@@ -140,6 +145,11 @@ export default function EvaluateAnswers() {
               </option>
             ))}
           </select>
+          {questionId && answers.length === 0 ? (
+            <p className="muted" style={{ margin: "0.4rem 0 0" }}>
+              No pending answers for manual review on this question.
+            </p>
+          ) : null}
         </div>
 
         <div className="grid-2">

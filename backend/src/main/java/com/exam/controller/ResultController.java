@@ -1,6 +1,7 @@
 package com.exam.controller;
 
 import com.exam.model.Result;
+import com.exam.model.User;
 import com.exam.service.ResultService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +24,21 @@ public class ResultController {
         return ResponseEntity.ok(resultService.publishResult(examId, studentId));
     }
 
+    @PostMapping("/publish-all/{examId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Result>> publishAllForExam(@PathVariable Long examId) {
+        return ResponseEntity.ok(resultService.publishAllResultsForExam(examId));
+    }
+
     @GetMapping("/me")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<List<Result>> myResults(Authentication authentication) {
         return ResponseEntity.ok(resultService.getStudentResults(authentication.getName()));
+    }
+
+    @GetMapping("/exam/{examId}/students-ready")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<User>> getStudentsReadyForPublishing(@PathVariable Long examId) {
+        return ResponseEntity.ok(resultService.getStudentsReadyForPublishing(examId));
     }
 }

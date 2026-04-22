@@ -10,6 +10,7 @@ import AttemptExam from "./pages/AttemptExam";
 import Result from "./pages/Result";
 import ViewExams from "./pages/ViewExams";
 import ManageUsers from "./pages/ManageUsers";
+import PublishExam from "./pages/PublishExam";
 import PublishResults from "./pages/PublishResults";
 import EvaluateAnswers from "./pages/EvaluateAnswers";
 import Landing from "./pages/Landing";
@@ -42,6 +43,10 @@ export default function App() {
           <Route
             path="/create-exam"
             element={<ProtectedRoute allowedRoles={[ROLE.ADMIN, ROLE.FACULTY]}><CreateExam /></ProtectedRoute>}
+          />
+          <Route
+            path="/publish-exam"
+            element={<ProtectedRoute allowedRoles={[ROLE.ADMIN, ROLE.FACULTY]}><PublishExam /></ProtectedRoute>}
           />
           <Route
             path="/publish-results"

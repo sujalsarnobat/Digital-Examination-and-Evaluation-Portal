@@ -17,8 +17,9 @@ export default function CreateExam() {
     try {
       await api.post("/exams", form);
       setMsg("Exam created in DRAFT state");
-    } catch {
-      setMsg("Failed to create exam");
+    } catch (err) {
+      const errorMsg = err?.response?.data?.error || err?.response?.data?.message || "Failed to create exam";
+      setMsg(errorMsg);
     }
   };
 

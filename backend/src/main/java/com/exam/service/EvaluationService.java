@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class EvaluationService {
     private final UserRepository userRepository;
     private final ExamRepository examRepository;
     private final QuestionRepository questionRepository;
+    private final ResultService resultService;
 
     public Answer submitAnswer(AnswerDTO dto, String studentEmail) {
         User student = userRepository.findByEmail(studentEmail)
@@ -47,7 +49,13 @@ public class EvaluationService {
             throw new BadRequestException("Question does not belong to selected exam");
         }
 
-        Answer answer = new Answer();
+        Optional<Answer> existingAnswer = answerRepository.findByExamIdAndQuestionIdAndStudentId(
+                exam.getId(),
+                question.getId(),
+                student.getId()
+        );
+
+        Answer answer = existingAnswer.orElseGet(Answer::new);
         answer.setExam(exam);
         answer.setQuestion(question);
         answer.setStudent(student);
@@ -55,16 +63,26 @@ public class EvaluationService {
         answer.setSelectedOption(dto.getSelectedOption());
 
         if (question.getQuestionType() == QuestionType.MCQ) {
+            if (dto.getSelectedOption() == null || dto.getSelectedOption().isBlank()) {
+                throw new BadRequestException("MCQ answer option is required");
+            }
             answer.setEvaluationStatus(EvaluationStatus.AUTO_EVALUATED);
             int marks = question.getAnswerKey() != null && question.getAnswerKey().equalsIgnoreCase(dto.getSelectedOption())
                     ? question.getMarks() : 0;
             answer.setAwardedMarks(marks);
+            answer.setResponseText(null);
         } else {
+            if (dto.getResponseText() == null || dto.getResponseText().isBlank()) {
+                throw new BadRequestException("Descriptive response text is required");
+            }
             answer.setEvaluationStatus(EvaluationStatus.MANUAL_REVIEW_PENDING);
             answer.setAwardedMarks(0);
+            answer.setSelectedOption(null);
         }
 
-        return answerRepository.save(answer);
+        Answer savedAnswer = answerRepository.save(answer);
+        resultService.publishResultIfReady(exam.getId(), student.getId());
+        return savedAnswer;
     }
 
     public Answer manualEvaluate(ManualEvaluationDTO dto, String facultyEmail) {
@@ -81,7 +99,9 @@ public class EvaluationService {
         answer.setAwardedMarks(dto.getAwardedMarks());
         answer.setEvaluationStatus(EvaluationStatus.FINALIZED);
         answer.setEvaluatedBy(faculty);
-        return answerRepository.save(answer);
+        Answer savedAnswer = answerRepository.save(answer);
+        resultService.publishResultIfReady(answer.getExam().getId(), answer.getStudent().getId());
+        return savedAnswer;
     }
 
     public List<Answer> getAnswersByExamAndQuestion(Long examId, Long questionId) {

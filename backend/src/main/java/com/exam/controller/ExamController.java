@@ -43,4 +43,10 @@ public class ExamController {
     public ResponseEntity<List<Exam>> getLive() {
         return ResponseEntity.ok(examService.getLiveExams());
     }
+
+    @GetMapping("/live/available")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<Exam>> getAvailableLiveForStudent(Authentication authentication) {
+        return ResponseEntity.ok(examService.getAvailableLiveExamsForStudent(authentication.getName()));
+    }
 }

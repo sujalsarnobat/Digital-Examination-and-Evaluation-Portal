@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -50,10 +51,35 @@ public class ResultService {
         return resultRepository.save(result);
     }
 
+    public List<Result> publishAllResultsForExam(Long examId) {
+        List<User> studentsReady = getStudentsReadyForPublishing(examId);
+        
+        List<Result> publishedResults = new java.util.ArrayList<>();
+        for (User student : studentsReady) {
+            Result result = publishResult(examId, student.getId());
+            publishedResults.add(result);
+        }
+        
+        return publishedResults;
+    }
+
     public List<Result> getStudentResults(String email) {
         User student = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
         return resultRepository.findByStudentId(student.getId());
+    }
+
+    public List<User> getStudentsReadyForPublishing(Long examId) {
+        List<Answer> allAnswers = answerRepository.findByExamId(examId);
+        
+        return allAnswers.stream()
+                .map(Answer::getStudent)
+                .distinct()
+                .filter(student -> {
+                    List<Answer> studentAnswers = answerRepository.findByExamIdAndStudentId(examId, student.getId());
+                    return !studentAnswers.stream().anyMatch(a -> a.getEvaluationStatus() == EvaluationStatus.MANUAL_REVIEW_PENDING);
+                })
+                .collect(Collectors.toList());
     }
 
     private String getGrade(double percentage) {
@@ -65,3 +91,4 @@ public class ResultService {
         return "F";
     }
 }
+

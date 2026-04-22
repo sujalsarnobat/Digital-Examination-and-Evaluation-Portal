@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS exams (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    created_by BIGINT NOT NULL,
+    created_by_id BIGINT NOT NULL,
     title VARCHAR(255) NOT NULL,
     description TEXT,
     start_time DATETIME NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS exams (
     duration_minutes INT NOT NULL,
     total_marks INT NOT NULL,
     exam_status VARCHAR(20) NOT NULL,
-    CONSTRAINT fk_exam_user FOREIGN KEY (created_by) REFERENCES users(id)
+    CONSTRAINT fk_exam_user FOREIGN KEY (created_by_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS questions (

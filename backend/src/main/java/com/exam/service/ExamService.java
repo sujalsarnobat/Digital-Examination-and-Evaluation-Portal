@@ -6,13 +6,15 @@ import com.exam.exception.ResourceNotFoundException;
 import com.exam.model.Exam;
 import com.exam.model.ExamStatus;
 import com.exam.model.User;
+import com.exam.repository.AnswerRepository;
 import com.exam.repository.ExamRepository;
+import com.exam.repository.QuestionRepository;
 import com.exam.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +22,8 @@ public class ExamService {
 
     private final ExamRepository examRepository;
     private final UserRepository userRepository;
+    private final AnswerRepository answerRepository;
+    private final QuestionRepository questionRepository;
 
     public Exam createExam(ExamDTO dto, String facultyEmail) {
         User faculty = userRepository.findByEmail(facultyEmail)
@@ -54,7 +58,22 @@ public class ExamService {
     }
 
     public List<Exam> getLiveExams() {
-        LocalDateTime now = LocalDateTime.now();
-        return examRepository.findByExamStatusAndStartTimeBeforeAndEndTimeAfter(ExamStatus.LIVE, now, now);
+        return examRepository.findByExamStatus(ExamStatus.LIVE);
+    }
+
+    public List<Exam> getAvailableLiveExamsForStudent(String studentEmail) {
+        User student = userRepository.findByEmail(studentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+
+        return getLiveExams().stream()
+                .filter(exam -> {
+                    long totalQuestions = questionRepository.countByExamId(exam.getId());
+                    if (totalQuestions == 0) {
+                        return true;
+                    }
+                    long answeredDistinctQuestions = answerRepository.countDistinctQuestionIdByExamIdAndStudentId(exam.getId(), student.getId());
+                    return answeredDistinctQuestions < totalQuestions;
+                })
+                .collect(Collectors.toList());
     }
 }

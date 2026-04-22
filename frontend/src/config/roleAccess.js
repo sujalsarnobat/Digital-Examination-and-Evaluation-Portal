@@ -8,10 +8,12 @@ export const ROLE_ACCESS = {
   [ROLE.ADMIN]: [
     { label: "Manage Users", path: "/manage-users" },
     { label: "Create Exam", path: "/create-exam" },
+    { label: "Publish Exam", path: "/publish-exam" },
     { label: "Publish Results", path: "/publish-results" }
   ],
   [ROLE.FACULTY]: [
     { label: "Create Exam", path: "/create-exam" },
+    { label: "Publish Exam", path: "/publish-exam" },
     { label: "Add Questions", path: "/add-question" },
     { label: "Evaluate Answers", path: "/evaluate-answers" }
   ],

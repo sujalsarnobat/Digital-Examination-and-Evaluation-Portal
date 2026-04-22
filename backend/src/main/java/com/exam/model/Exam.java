@@ -19,7 +19,7 @@ public class Exam {
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", nullable = false)
+    @JoinColumn(name = "created_by_id", nullable = false)
     private User createdBy;
 
     @Column(nullable = false)

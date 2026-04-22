@@ -1,4 +1,5 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
+import { clearBasicAuth } from "../services/api";
 import {
   ROLE_ACCESS,
   getAuthFromStorage,
@@ -12,6 +13,7 @@ export default function Navbar() {
   const items = ROLE_ACCESS[role] || [];
 
   const logout = () => {
+    clearBasicAuth();
     localStorage.removeItem("auth");
     navigate("/login");
   };

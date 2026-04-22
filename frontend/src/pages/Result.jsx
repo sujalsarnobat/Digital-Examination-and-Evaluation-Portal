@@ -26,9 +26,12 @@ export default function Result() {
           {results.map((r) => (
             <article className="list-item" key={r.id}>
               <div>
-                <h4 style={{ margin: 0 }}>Exam #{r.exam.id}</h4>
+                <h4 style={{ margin: 0 }}>{r.exam?.title || `Exam #${r.exam?.id}`}</h4>
                 <p className="muted" style={{ margin: "0.3rem 0 0" }}>
                   Score: {r.totalScore}
+                </p>
+                <p className="muted" style={{ margin: "0.2rem 0 0" }}>
+                  Published: {r.publishedAt ? new Date(r.publishedAt).toLocaleDateString() : "N/A"}
                 </p>
               </div>
               <div className="chips">
